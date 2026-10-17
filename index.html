@@ -3,54 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 운세 서비스</title>
+    <title>🔮 AI 명리 운세 서비스</title>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
-        input, textarea, button { width: 100%; margin-top: 10px; padding: 10px; box-sizing: border-box; }
-        button { background: #4F46E5; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #result { margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px; white-space: pre-line; }
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; color: #38bdf8; }
+        p.subtitle { color: #94a3b8; margin-bottom: 30px; }
+        
+        .keywords-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .keyword-btn {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 2px solid #334155;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .keyword-btn:hover {
+            border-color: #38bdf8;
+            background: #334155;
+        }
+        .keyword-btn.selected {
+            background: #0284c7;
+            border-color: #38bdf8;
+            color: white;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+
+        #result {
+            margin-top: 30px;
+            padding: 25px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            text-align: left;
+            line-height: 1.6;
+            white-space: pre-line;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h2>🔮 AI 무료 운세 보기</h2>
-    <input type="text" id="concern" placeholder="고민을 입력하세요 (예: 올해 연애운)">
-    <textarea id="detail" placeholder="상세 내용을 입력하세요 (선택)"></textarea>
-    <button onclick="getFortune()">운세 보기</button>
+
+    <h1>🔮 AI 명리학자 운세 풀이</h1>
+    <p class="subtitle">알고 싶은 운세 키워드를 선택하고 분석을 받아보세요.</p>
+
+    <!-- 4가지 키워드 선택지 -->
+    <div class="keywords-container">
+        <button class="keyword-btn" onclick="selectKeyword(this, '올해 총운 및 종합 조언')">✨ 올해의 총운</button>
+        <button class="keyword-btn" onclick="selectKeyword(this, '연애운 및 인연운')">💖 연애/인연운</button>
+        <button class="keyword-btn" onclick="selectKeyword(this, '재물운 및 투자 금전운')">💰 재물/금전운</button>
+        <button class="keyword-btn" onclick="selectKeyword(this, '직장운 및 커리어/이직운')">🏢 직장/커리어운</button>
+    </div>
+
+    <button class="submit-btn" onclick="getFortune()">운세 분석 시작하기</button>
 
     <div id="result"></div>
 
     <script>
-        // 백엔드 Worker 주소
+        // 백엔드 Worker 주소 (필요시 본인 주소로 확인)
         const WORKER_URL = 'https://202610testing.iamleeka12.workers.dev';
+        let selectedConcern = '';
+
+        function selectKeyword(btn, keyword) {
+            // 모든 버튼에서 selected 클래스 제거
+            document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('selected'));
+            // 클릭한 버튼에 선택 효과 추가
+            btn.classList.add('selected');
+            selectedConcern = keyword;
+        }
 
         async function getFortune() {
-            const concern = document.getElementById('concern').value;
-            const detail = document.getElementById('detail').value;
-            const resultDiv = document.getElementById('result');
-
-            if (!concern) {
-                alert("고민을 입력해주세요!");
+            if (!selectedConcern) {
+                alert("먼저 원하는 운세 키워드를 하나 선택해주세요!");
                 return;
             }
 
-            resultDiv.innerHTML = "AI 명리학자가 운세를 분석 중입니다... 🔮";
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = "⏳ AI 명리학자가 사주와 기운을 정성껏 분석 중입니다... 잠시만 기다려주세요 🔮";
 
             try {
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ concern, detail })
+                    body: JSON.stringify({ concern: selectedConcern, detail: "선택형 키워드 맞춤 분석 요청" })
                 });
 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    resultDiv.innerHTML = data.fortune;
+                    resultDiv.innerHTML = `<h3>💡 ${selectedConcern} 풀이 결과</h3><hr style="border:0; border-top:1px solid #334155; margin:15px 0;">${data.fortune}`;
                 } else {
-                    resultDiv.innerHTML = "오류 발생: " + (data.error || "알 수 없는 오류");
+                    resultDiv.innerHTML = "❌ 오류 발생: " + (data.error || "알 수 없는 오류");
                 }
             } catch (err) {
-                resultDiv.innerHTML = "통신 에러: " + err.message;
+                resultDiv.innerHTML = "❌ 통신 에러: " + err.message;
             }
         }
     </script>
