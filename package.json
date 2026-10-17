@@ -1,0 +1,10 @@
+{
+  "name": "202610testing",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0"
+  }
+}

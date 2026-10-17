@@ -7,42 +7,45 @@
     <style>
         body { font-family: sans-serif; background-color: #0f172a; color: white; max-width: 500px; margin: 40px auto; padding: 20px; }
         .card { background-color: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 10px; margin: 8px 0 16px 0; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 6px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0 16px 0; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 6px; box-sizing: border-radius; }
         button { width: 100%; padding: 12px; background-color: #38bdf8; color: #0f172a; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; }
         #result { white-space: pre-wrap; line-height: 1.6; background-color: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #334155; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>🔮 현재운세 (무료 AI)</h2>
+        <h2>현재운세 (무료 AI)</h2>
         <label>요즘 가장 큰 고민/관심사</label>
         <input type="text" id="concern" placeholder="예: 이직, 주식, 연애">
 
         <label>상세 내용</label>
         <textarea id="detail" rows="3" placeholder="상황을 간단히 적어주세요"></textarea>
 
-        <button onclick="getFortune()">운세 보기</button>
+        <button type="button" id="fortuneBtn">운세 보기</button>
     </div>
 
     <div class="card" id="resultCard" style="display:none;">
-        <h3>✨ AI 운세 분석</h3>
+        <h3>AI 운세 분석</h3>
         <div id="result">분석 중...</div>
     </div>
 
     <script>
-        // 운세 가져오기 함수
+        const WORKER_URL = window.location.hostname.endsWith("workers.dev")
+            ? "/api/fortune"
+            : "https://202610testing.iamleeka12.workers.dev/api/fortune";
+
         async function getFortune() {
-            const concern = document.getElementById('concern').value; // 입력한 고민 값 (ID는 실제 HTML에 맞춰 확인 필요)
-            const detail = document.getElementById('detail').value;   // 입력한 상세 내용 값
-            const resultDiv = document.getElementById('result');      // 결과를 보여줄 영역
+            const concern = document.getElementById("concern").value;
+            const detail = document.getElementById("detail").value;
+            const resultDiv = document.getElementById("result");
 
             if (!concern) {
                 alert("고민을 입력해주세요!");
                 return;
             }
 
-            document.getElementById('resultCard').style.display = 'block';
-            resultDiv.innerHTML = "AI 명리학자가 운세를 분석 중입니다... 잠시만 기다려주세요 🔮";
+            document.getElementById("resultCard").style.display = "block";
+            resultDiv.textContent = "AI 명리학자가 운세를 분석 중입니다... 잠시만 기다려주세요";
 
             try {
                 const response = await fetch(WORKER_URL, {
@@ -53,17 +56,25 @@
                     body: JSON.stringify({ concern, detail })
                 });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.innerHTML = `<div class="fortune-result">${data.fortune}</div>`;
+                const raw = await response.text();
+                let data = {};
+                try {
+                    data = JSON.parse(raw);
+                } catch {
+                    throw new Error("서버가 운세 API가 아니라 웹페이지를 반환했습니다. Worker POST 핸들러를 확인하세요.");
+                }
+
+                if (response.ok && data.fortune) {
+                    resultDiv.textContent = data.fortune;
                 } else {
-                    resultDiv.innerHTML = `에러 발생: ${data.error || '알 수 없는 오류'}`;
+                    resultDiv.textContent = "에러 발생: " + (data.error || ("HTTP " + response.status));
                 }
             } catch (err) {
-                resultDiv.innerHTML = `통신 에러 발생: ${err.message}`;
+                resultDiv.textContent = "통신 에러 발생: " + err.message;
             }
         }
+
+        document.getElementById("fortuneBtn").addEventListener("click", getFortune);
     </script>
 </body>
 </html>
