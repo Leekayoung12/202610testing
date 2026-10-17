@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현재운세 - 무료 AI 테스트</title>
+    <style>
+        body { font-family: sans-serif; background-color: #0f172a; color: white; max-width: 500px; margin: 40px auto; padding: 20px; }
+        .card { background-color: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0 16px 0; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #38bdf8; color: #0f172a; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        #result { white-space: pre-wrap; line-height: 1.6; background-color: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔮 현재운세 (무료 AI)</h2>
+        <label>요즘 가장 큰 고민/관심사</label>
+        <input type="text" id="concern" placeholder="예: 이직, 주식, 연애">
+
+        <label>상세 내용</label>
+        <textarea id="detail" rows="3" placeholder="상황을 간단히 적어주세요"></textarea>
+
+        <button onclick="getFortune()">운세 보기</button>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none;">
+        <h3>✨ AI 운세 분석</h3>
+        <div id="result">분석 중...</div>
+    </div>
+
+    <script>
+        async function getFortune() {
+            const concern = document.getElementById('concern').value;
+            const detail = document.getElementById('detail').value;
+            if(!concern || !detail) return alert('모두 입력해주세요!');
+
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('result').innerText = 'Cloudflare 무료 AI가 운세를 분석하고 있습니다...';
+
+            try {
+                // ⚠️ 나중에 Worker 배포 후 생성되는 Workers URL 주소로 변경하시면 됩니다.
+                const WORKER_URL = https://202610testing.iamleeka12.workers.dev/';
+
+                const res = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ concern, detail })
+                });
+                const data = await res.json();
+                document.getElementById('result').innerText = data.fortune;
+            } catch(e) {
+                document.getElementById('result').innerText = '에러 발생: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
