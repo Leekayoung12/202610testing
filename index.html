@@ -41,6 +41,7 @@
                 return;
             }
 
+            document.getElementById('resultCard').style.display = 'block';
             resultDiv.innerHTML = "AI 명리학자가 운세를 분석 중입니다... 잠시만 기다려주세요 🔮";
 
             try {
@@ -62,7 +63,6 @@
             } catch (err) {
                 resultDiv.innerHTML = `통신 에러 발생: ${err.message}`;
             }
-        }
         }
     </script>
 </body>
